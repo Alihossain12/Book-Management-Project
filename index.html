@@ -23,10 +23,10 @@
       </select>
     </div>
     <div>
-      <button class="btn btn-primary" onclick="showCreateForm()">+ Add Book</button>
-      <button class="btn btn-secondary" onclick="toggleTrash()">Trash</button>
-      <button class="btn btn-outline-info" onclick="showCategoryModal()">Manage Categories</button>
-      <button class="btn btn-info" onclick="showAllBooks()">All Books Management</button>
+      <button class="btn btn-primary" onclick="showCreateForm()">➕ Add Book</button>
+      <button class="btn btn-secondary" onclick="toggleTrash()">🗑️ Trash</button>
+      <button class="btn btn-outline-info" onclick="showCategoryModal()"> 🗂 Manage Categories</button>
+      <button class="btn btn-info" onclick="showAllBooks()">📚 All Books Management</button>
     </div>
   </div>
 
@@ -61,6 +61,11 @@
         <label for="category" class="form-label">Category</label>
         <select id="category" class="form-select" required></select>
       </div>
+            <div class="mb-2">
+        <label for="Published-year" class="form-label">Published Year</label>
+        <input type="text" class="form-control" id="Published-year" required />
+      </div>
+
       <div class="mb-2">
         <label for="imageFile" class="form-label">Book Image</label>
         <input type="file" class="form-control" id="imageFile" accept="image/*" />
@@ -199,9 +204,9 @@
           <td><img src="${b.image || 'https://via.placeholder.com/80'}" class="book-image" alt="Book Image" /></td>
           <td>${b.title}</td><td>${b.author}</td><td>${b.category}</td>
           <td>
-            <button class="btn btn-sm btn-primary" onclick="viewBook(${b.id})">View</button>
-            <button class="btn btn-sm btn-info" onclick="editBook(${b.id})">Edit</button>
-            <button class="btn btn-sm btn-danger" onclick="deleteBook(${b.id})">Delete</button>
+            <button class="btn btn-sm btn-primary" onclick="viewBook(${b.id})">👁 View</button>
+            <button class="btn btn-sm btn-info" onclick="editBook(${b.id})">✏ Edit</button>
+            <button class="btn btn-sm btn-danger" onclick="deleteBook(${b.id})">🗑️ Delete</button>
           </td>
         </tr>`;
       });
@@ -215,8 +220,8 @@
         <td><img src="${b.image || 'https://via.placeholder.com/80'}" class="book-image" alt="Book Image" /></td>
         <td>${b.title}</td><td>${b.author}</td><td>${b.category}</td>
         <td>
-          <button class="btn btn-sm btn-success" onclick="restoreBook(${b.id})">Restore</button>
-          <button class="btn btn-sm btn-danger" onclick="permanentlyDeleteBook(${b.id})">Delete Permanently</button>
+          <button class="btn btn-sm btn-success" onclick="restoreBook(${b.id})"> 🗂 Restore</button>
+          <button class="btn btn-sm btn-danger" onclick="permanentlyDeleteBook(${b.id})">🗑️ Delete Permanently</button>
         </td>
       </tr>`;
     });
