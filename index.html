@@ -26,6 +26,7 @@
       <button class="btn btn-primary" onclick="showCreateForm()">+ Add Book</button>
       <button class="btn btn-secondary" onclick="toggleTrash()">Trash</button>
       <button class="btn btn-outline-info" onclick="showCategoryModal()">Manage Categories</button>
+      <button class="btn btn-info" onclick="showAllBooks()">All Books Management</button>
     </div>
   </div>
 
@@ -390,6 +391,15 @@
 
   categoryFilter.addEventListener('change', displayBooks);
   init();
+
+  function showAllBooks() {
+  // Hide other sections and show main book list
+  document.getElementById('bookSection').style.display = 'block';
+  document.getElementById('bookFormSection').style.display = 'none';
+  document.getElementById('trashSection').style.display = 'none';
+  clearFlash();
+}
+
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
