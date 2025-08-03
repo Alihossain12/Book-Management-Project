@@ -37,7 +37,7 @@
     <table class="table table-bordered bg-white">
       <thead class="table-light">
         <tr>
-          <th>#</th><th>Image</th><th>Title</th><th>Author</th><th>Category</th><th>Actions</th>
+          <th>#</th><th>Image</th><th>Title</th><th>Author</th><th>Year</th><th>Category</th><th>Actions</th>
         </tr>
       </thead>
       <tbody id="bookTableBody"></tbody>
@@ -58,14 +58,13 @@
         <input type="text" class="form-control" id="author" required />
       </div>
       <div class="mb-2">
-        <label for="category" class="form-label">Category</label>
-        <select id="category" class="form-select" required></select>
-      </div>
-            <div class="mb-2">
         <label for="Published-year" class="form-label">Published Year</label>
         <input type="text" class="form-control" id="Published-year" required />
       </div>
-
+      <div class="mb-2">
+        <label for="category" class="form-label">Category</label>
+        <select id="category" class="form-select" required></select>
+      </div>
       <div class="mb-2">
         <label for="imageFile" class="form-label">Book Image</label>
         <input type="file" class="form-control" id="imageFile" accept="image/*" />
@@ -82,7 +81,7 @@
     <table class="table table-bordered bg-white">
       <thead class="table-light">
         <tr>
-          <th>#</th><th>Image</th><th>Title</th><th>Author</th><th>Category</th><th>Actions</th>
+          <th>#</th><th>Image</th><th>Title</th><th>Author</th><th>Year</th><th>Category</th><th>Actions</th>
         </tr>
       </thead>
       <tbody id="trashTableBody"></tbody>
@@ -91,320 +90,249 @@
 </div>
 
 <!-- Category Modal -->
-<div class="modal fade" id="categoryModal" tabindex="-1" aria-labelledby="categoryModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="categoryModalLabel">Manage Categories</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <form id="categoryForm" class="d-flex gap-2 mb-3" onsubmit="addCategory(event)">
-          <input type="text" id="newCategory" class="form-control" placeholder="New category" required />
-          <button class="btn btn-success">Add</button>
-        </form>
-        <ul class="list-group" id="categoryList"></ul>
-      </div>
+<div class="modal fade" id="categoryModal" tabindex="-1">
+  <div class="modal-dialog"><div class="modal-content">
+    <div class="modal-header">
+      <h5 class="modal-title">Manage Categories</h5>
+      <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
     </div>
-  </div>
+    <div class="modal-body">
+      <form id="categoryForm" class="d-flex gap-2 mb-3" onsubmit="addCategory(event)">
+        <input type="text" id="newCategory" class="form-control" placeholder="New category" required />
+        <button class="btn btn-success">Add</button>
+      </form>
+      <ul class="list-group" id="categoryList"></ul>
+    </div>
+  </div></div>
 </div>
 
 <!-- View Modal -->
-<div class="modal fade" id="viewModal" tabindex="-1" aria-labelledby="viewModalLabel" aria-hidden="true">
+<div class="modal fade" id="viewModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="viewModalLabel">Book Details</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <h5 class="modal-title">Book Details</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body d-flex flex-column flex-md-row gap-3">
-        <img id="viewImage" src="" alt="Book Image" style="max-width:200px; border-radius:8px; object-fit:cover;" />
+        <img id="viewImage" src="" alt="Book Image" style="max-width:200px; border-radius:8px;" />
         <div>
           <h4 id="viewTitle"></h4>
           <p><strong>Author:</strong> <span id="viewAuthor"></span></p>
+          <p><strong>Published Year:</strong> <span id="viewYear"></span></p>
           <p><strong>Category:</strong> <span id="viewCategory"></span></p>
         </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
       </div>
     </div>
   </div>
 </div>
 
 <script>
-  let books = JSON.parse(localStorage.getItem('books')) || [];
-  let categories = JSON.parse(localStorage.getItem('categories')) || ['Fiction', 'Non-Fiction', 'Science', 'Biography'];
+let books = JSON.parse(localStorage.getItem('books')) || [];
+let categories = JSON.parse(localStorage.getItem('categories')) || ['Fiction', 'Non-Fiction', 'Science', 'Biography'];
 
-  const categoryFilter = document.getElementById('categoryFilter');
-  const categorySelect = document.getElementById('category');
-  const categoryList = document.getElementById('categoryList');
-  const bookTableBody = document.getElementById('bookTableBody');
-  const trashTableBody = document.getElementById('trashTableBody');
-  const flashDiv = document.getElementById('flashMessage');
-  const imageFileInput = document.getElementById('imageFile');
-  const imagePreview = document.getElementById('imagePreview');
+const categoryFilter = document.getElementById('categoryFilter');
+const categorySelect = document.getElementById('category');
+const bookTableBody = document.getElementById('bookTableBody');
+const trashTableBody = document.getElementById('trashTableBody');
+const imageFileInput = document.getElementById('imageFile');
+const imagePreview = document.getElementById('imagePreview');
+const flashDiv = document.getElementById('flashMessage');
 
-  function init() {
-    renderCategoryOptions();
-    displayBooks();
-    displayTrash();
-  }
-
-  function renderCategoryOptions() {
-    categoryFilter.innerHTML = '<option value="all">All Categories</option>';
-    categorySelect.innerHTML = '';
-    categories.forEach(cat => {
-      categoryFilter.innerHTML += `<option value="${cat}">${cat}</option>`;
-      categorySelect.innerHTML += `<option value="${cat}">${cat}</option>`;
-    });
-  }
-
-  function showCategoryModal() {
-    categoryList.innerHTML = '';
-    categories.forEach((cat, index) => {
-      categoryList.innerHTML += `<li class="list-group-item d-flex justify-content-between align-items-center">
-        ${cat}
-        <button class="btn btn-sm btn-danger" onclick="deleteCategory(${index})">Delete</button>
-      </li>`;
-    });
-    new bootstrap.Modal(document.getElementById('categoryModal')).show();
-  }
-
-  function addCategory(e) {
-    e.preventDefault();
-    const newCat = document.getElementById('newCategory').value.trim();
-    if (newCat && !categories.includes(newCat)) {
-      categories.push(newCat);
-      localStorage.setItem('categories', JSON.stringify(categories));
-      renderCategoryOptions();
-      showFlash('Category added.');
-      document.getElementById('newCategory').value = '';
-      showCategoryModal();
-    }
-  }
-
-  function deleteCategory(index) {
-    if (confirm('Are you sure you want to delete this category?')) {
-      categories.splice(index, 1);
-      localStorage.setItem('categories', JSON.stringify(categories));
-      renderCategoryOptions();
-      showFlash('Category deleted.');
-      showCategoryModal();
-    }
-  }
-
-  function displayBooks() {
-    const selected = categoryFilter.value;
-    bookTableBody.innerHTML = '';
-    books.filter(b => !b.deleted && (selected === 'all' || b.category === selected))
-      .forEach((b, i) => {
-        bookTableBody.innerHTML += `<tr>
-          <td>${i + 1}</td>
-          <td><img src="${b.image || 'https://via.placeholder.com/80'}" class="book-image" alt="Book Image" /></td>
-          <td>${b.title}</td><td>${b.author}</td><td>${b.category}</td>
-          <td>
-            <button class="btn btn-sm btn-primary" onclick="viewBook(${b.id})">👁 View</button>
-            <button class="btn btn-sm btn-info" onclick="editBook(${b.id})">✏ Edit</button>
-            <button class="btn btn-sm btn-danger" onclick="deleteBook(${b.id})">🗑️ Delete</button>
-          </td>
-        </tr>`;
-      });
-  }
-
-  function displayTrash() {
-    trashTableBody.innerHTML = '';
-    books.filter(b => b.deleted).forEach((b, i) => {
-      trashTableBody.innerHTML += `<tr>
-        <td>${i + 1}</td>
-        <td><img src="${b.image || 'https://via.placeholder.com/80'}" class="book-image" alt="Book Image" /></td>
-        <td>${b.title}</td><td>${b.author}</td><td>${b.category}</td>
-        <td>
-          <button class="btn btn-sm btn-success" onclick="restoreBook(${b.id})"> 🗂 Restore</button>
-          <button class="btn btn-sm btn-danger" onclick="permanentlyDeleteBook(${b.id})">🗑️ Delete Permanently</button>
-        </td>
-      </tr>`;
-    });
-  }
-
-  function saveBook(e) {
-    e.preventDefault();
-
-    const id = document.getElementById('bookId').value;
-    const title = document.getElementById('title').value.trim();
-    const author = document.getElementById('author').value.trim();
-    const category = document.getElementById('category').value;
-
-    if (!title || !author || !category) {
-      showFlash('Please fill all required fields.');
-      return;
-    }
-
-    if (imageFileInput.files && imageFileInput.files[0]) {
-      const file = imageFileInput.files[0];
-      const reader = new FileReader();
-      reader.onload = function (event) {
-        saveBookData(id, title, author, category, event.target.result);
-      };
-      reader.readAsDataURL(file);
-    } else {
-      let oldImage = '';
-      if (id) {
-        const book = books.find(b => b.id === Number(id));
-        oldImage = book ? book.image : '';
-      }
-      saveBookData(id, title, author, category, oldImage);
-    }
-  }
-
-  function saveBookData(id, title, author, category, image) {
-    const newBook = {
-      id: id ? Number(id) : Date.now(),
-      title,
-      author,
-      category,
-      image,
-      deleted: false
-    };
-
-    if (id) {
-      books = books.map(b => b.id === Number(id) ? newBook : b);
-      showFlash('Book updated.');
-    } else {
-      books.push(newBook);
-      showFlash('Book added.');
-    }
-
-    localStorage.setItem('books', JSON.stringify(books));
-    cancelForm();
-    displayBooks();
-    displayTrash();
-  }
-
-  function deleteBook(id) {
-    books = books.map(b => b.id === id ? {...b, deleted: true} : b);
-    localStorage.setItem('books', JSON.stringify(books));
-    showFlash('Book moved to trash.');
-    displayBooks();
-    displayTrash();
-  }
-
-  function editBook(id) {
-    const book = books.find(b => b.id === id);
-    if (!book) return;
-    document.getElementById('bookId').value = book.id;
-    document.getElementById('title').value = book.title;
-    document.getElementById('author').value = book.author;
-    document.getElementById('category').value = book.category;
-    imageFileInput.value = '';
-    if (book.image) {
-      imagePreview.src = book.image;
-      imagePreview.style.display = 'block';
-    } else {
-      imagePreview.style.display = 'none';
-    }
-    document.getElementById('formTitle').innerText = 'Edit Book';
-    document.getElementById('bookFormSection').style.display = 'block';
-    document.getElementById('bookSection').style.display = 'none';
-    document.getElementById('trashSection').style.display = 'none';
-  }
-
-  function viewBook(id) {
-    const book = books.find(b => b.id === id);
-    if (!book) return;
-    document.getElementById('viewImage').src = book.image || 'https://via.placeholder.com/200';
-    document.getElementById('viewTitle').innerText = book.title;
-    document.getElementById('viewAuthor').innerText = book.author;
-    document.getElementById('viewCategory').innerText = book.category;
-    const viewModal = new bootstrap.Modal(document.getElementById('viewModal'));
-    viewModal.show();
-  }
-
-  function restoreBook(id) {
-    books = books.map(b => b.id === id ? {...b, deleted: false} : b);
-    localStorage.setItem('books', JSON.stringify(books));
-    showFlash('Book restored.');
-    displayBooks();
-    displayTrash();
-  }
-
-  function permanentlyDeleteBook(id) {
-    if (confirm('Are you sure you want to delete permanently? This cannot be undone.')) {
-      books = books.filter(b => b.id !== id);
-      localStorage.setItem('books', JSON.stringify(books));
-      showFlash('Book deleted permanently.');
-      displayTrash();
-    }
-  }
-
-  function showCreateForm() {
-    document.getElementById('bookId').value = '';
-    document.getElementById('title').value = '';
-    document.getElementById('author').value = '';
-    document.getElementById('category').value = categories.length ? categories[0] : '';
-    imageFileInput.value = '';
-    imagePreview.style.display = 'none';
-    document.getElementById('formTitle').innerText = 'Add New Book';
-    document.getElementById('bookFormSection').style.display = 'block';
-    document.getElementById('bookSection').style.display = 'none';
-    document.getElementById('trashSection').style.display = 'none';
-  }
-
-  function cancelForm() {
-    document.getElementById('bookFormSection').style.display = 'none';
-    document.getElementById('bookSection').style.display = 'block';
-    document.getElementById('trashSection').style.display = 'none';
-    clearFlash();
-  }
-
-  function toggleTrash() {
-    const trashSection = document.getElementById('trashSection');
-    if (trashSection.style.display === 'none') {
-      trashSection.style.display = 'block';
-      document.getElementById('bookSection').style.display = 'none';
-      document.getElementById('bookFormSection').style.display = 'none';
-    } else {
-      trashSection.style.display = 'none';
-      document.getElementById('bookSection').style.display = 'block';
-    }
-    clearFlash();
-  }
-
-  function showFlash(msg) {
-    flashDiv.innerHTML = `<div class="alert alert-success">${msg}</div>`;
-    setTimeout(() => {
-      flashDiv.innerHTML = '';
-    }, 3000);
-  }
-  function clearFlash() {
-    flashDiv.innerHTML = '';
-  }
-
-  imageFileInput.addEventListener('change', function () {
-    if (this.files && this.files[0]) {
-      const reader = new FileReader();
-      reader.onload = function (e) {
-        imagePreview.src = e.target.result;
-        imagePreview.style.display = 'block';
-      };
-      reader.readAsDataURL(this.files[0]);
-    } else {
-      imagePreview.style.display = 'none';
-      imagePreview.src = '';
-    }
+function init() {
+  renderCategoryOptions();
+  displayBooks();
+  displayTrash();
+}
+function renderCategoryOptions() {
+  categoryFilter.innerHTML = '<option value="all">All Categories</option>';
+  categorySelect.innerHTML = '';
+  categories.forEach(cat => {
+    categoryFilter.innerHTML += `<option value="${cat}">${cat}</option>`;
+    categorySelect.innerHTML += `<option value="${cat}">${cat}</option>`;
   });
-
-  categoryFilter.addEventListener('change', displayBooks);
-  init();
-
-  function showAllBooks() {
-  // Hide other sections and show main book list
+}
+function showCategoryModal() {
+  const list = document.getElementById('categoryList');
+  list.innerHTML = '';
+  categories.forEach((cat, i) => {
+    list.innerHTML += `<li class="list-group-item d-flex justify-content-between">
+      ${cat}
+      <button class="btn btn-sm btn-danger" onclick="deleteCategory(${i})">Delete</button>
+    </li>`;
+  });
+  new bootstrap.Modal(document.getElementById('categoryModal')).show();
+}
+function addCategory(e) {
+  e.preventDefault();
+  const newCat = document.getElementById('newCategory').value.trim();
+  if (newCat && !categories.includes(newCat)) {
+    categories.push(newCat);
+    localStorage.setItem('categories', JSON.stringify(categories));
+    renderCategoryOptions();
+    showCategoryModal();
+    document.getElementById('newCategory').value = '';
+    showFlash('Category added');
+  }
+}
+function deleteCategory(i) {
+  if (confirm('Delete this category?')) {
+    categories.splice(i, 1);
+    localStorage.setItem('categories', JSON.stringify(categories));
+    renderCategoryOptions();
+    showFlash('Category deleted');
+    showCategoryModal();
+  }
+}
+function displayBooks() {
+  const selected = categoryFilter.value;
+  bookTableBody.innerHTML = '';
+  books.filter(b => !b.deleted && (selected === 'all' || b.category === selected)).forEach((b, i) => {
+    bookTableBody.innerHTML += `<tr>
+      <td>${i + 1}</td>
+      <td><img src="${b.image || 'https://via.placeholder.com/80'}" class="book-image" /></td>
+      <td>${b.title}</td><td>${b.author}</td><td>${b.year}</td><td>${b.category}</td>
+      <td>
+        <button class="btn btn-sm btn-primary" onclick="viewBook(${b.id})">👁 View</button>
+        <button class="btn btn-sm btn-info" onclick="editBook(${b.id})">✏ Edit</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteBook(${b.id})">🗑️ Delete</button>
+      </td>
+    </tr>`;
+  });
+}
+function displayTrash() {
+  trashTableBody.innerHTML = '';
+  books.filter(b => b.deleted).forEach((b, i) => {
+    trashTableBody.innerHTML += `<tr>
+      <td>${i + 1}</td>
+      <td><img src="${b.image || 'https://via.placeholder.com/80'}" class="book-image" /></td>
+      <td>${b.title}</td><td>${b.author}</td><td>${b.year}</td><td>${b.category}</td>
+      <td>
+        <button class="btn btn-sm btn-success" onclick="restoreBook(${b.id})">🗂 Restore</button>
+        <button class="btn btn-sm btn-danger" onclick="permanentlyDeleteBook(${b.id})">❌ Delete</button>
+      </td>
+    </tr>`;
+  });
+}
+function saveBook(e) {
+  e.preventDefault();
+  const id = document.getElementById('bookId').value;
+  const title = document.getElementById('title').value.trim();
+  const author = document.getElementById('author').value.trim();
+  const year = document.getElementById('Published-year').value.trim();
+  const category = categorySelect.value;
+  if (!title || !author || !year || !category) return showFlash('Please fill all fields');
+  if (imageFileInput.files[0]) {
+    const reader = new FileReader();
+    reader.onload = e => saveBookData(id, title, author, year, category, e.target.result);
+    reader.readAsDataURL(imageFileInput.files[0]);
+  } else {
+    const oldImg = id ? books.find(b => b.id === +id)?.image || '' : '';
+    saveBookData(id, title, author, year, category, oldImg);
+  }
+}
+function saveBookData(id, title, author, year, category, image) {
+  const newBook = { id: id ? +id : Date.now(), title, author, year, category, image, deleted: false };
+  books = id ? books.map(b => b.id === +id ? newBook : b) : [...books, newBook];
+  localStorage.setItem('books', JSON.stringify(books));
+  showFlash(id ? 'Book updated' : 'Book added');
+  cancelForm();
+  displayBooks(); displayTrash();
+}
+function editBook(id) {
+  const b = books.find(b => b.id === id);
+  if (!b) return;
+  document.getElementById('bookId').value = b.id;
+  document.getElementById('title').value = b.title;
+  document.getElementById('author').value = b.author;
+  document.getElementById('Published-year').value = b.year;
+  categorySelect.value = b.category;
+  imageFileInput.value = '';
+  imagePreview.src = b.image || '';
+  imagePreview.style.display = b.image ? 'block' : 'none';
+  document.getElementById('formTitle').innerText = 'Edit Book';
+  document.getElementById('bookFormSection').style.display = 'block';
+  document.getElementById('bookSection').style.display = 'none';
+  document.getElementById('trashSection').style.display = 'none';
+}
+function viewBook(id) {
+  const b = books.find(b => b.id === id);
+  if (!b) return;
+  document.getElementById('viewImage').src = b.image || '';
+  document.getElementById('viewTitle').innerText = b.title;
+  document.getElementById('viewAuthor').innerText = b.author;
+  document.getElementById('viewYear').innerText = b.year;
+  document.getElementById('viewCategory').innerText = b.category;
+  new bootstrap.Modal(document.getElementById('viewModal')).show();
+}
+function deleteBook(id) {
+  books = books.map(b => b.id === id ? {...b, deleted: true} : b);
+  localStorage.setItem('books', JSON.stringify(books));
+  displayBooks(); displayTrash(); showFlash('Book moved to trash');
+}
+function restoreBook(id) {
+  books = books.map(b => b.id === id ? {...b, deleted: false} : b);
+  localStorage.setItem('books', JSON.stringify(books));
+  displayBooks(); displayTrash(); showFlash('Book restored');
+}
+function permanentlyDeleteBook(id) {
+  if (confirm('Delete permanently?')) {
+    books = books.filter(b => b.id !== id);
+    localStorage.setItem('books', JSON.stringify(books));
+    displayTrash(); showFlash('Book deleted permanently');
+  }
+}
+function showCreateForm() {
+  document.getElementById('bookId').value = '';
+  document.getElementById('title').value = '';
+  document.getElementById('author').value = '';
+  document.getElementById('Published-year').value = '';
+  categorySelect.value = categories[0] || '';
+  imageFileInput.value = '';
+  imagePreview.style.display = 'none';
+  document.getElementById('formTitle').innerText = 'Add New Book';
+  document.getElementById('bookFormSection').style.display = 'block';
+  document.getElementById('bookSection').style.display = 'none';
+  document.getElementById('trashSection').style.display = 'none';
+}
+function cancelForm() {
+  document.getElementById('bookFormSection').style.display = 'none';
+  document.getElementById('bookSection').style.display = 'block';
+  document.getElementById('trashSection').style.display = 'none';
+}
+function toggleTrash() {
+  const trashSection = document.getElementById('trashSection');
+  const bookSection = document.getElementById('bookSection');
+  const formSection = document.getElementById('bookFormSection');
+  trashSection.style.display = trashSection.style.display === 'none' ? 'block' : 'none';
+  bookSection.style.display = trashSection.style.display === 'block' ? 'none' : 'block';
+  formSection.style.display = 'none';
+}
+function showAllBooks() {
   document.getElementById('bookSection').style.display = 'block';
   document.getElementById('bookFormSection').style.display = 'none';
   document.getElementById('trashSection').style.display = 'none';
-  clearFlash();
 }
-
+function showFlash(msg) {
+  flashDiv.innerHTML = `<div class="alert alert-success">${msg}</div>`;
+  setTimeout(() => flashDiv.innerHTML = '', 3000);
+}
+imageFileInput.addEventListener('change', function () {
+  const file = this.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      imagePreview.src = e.target.result;
+      imagePreview.style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+  } else {
+    imagePreview.style.display = 'none';
+    imagePreview.src = '';
+  }
+});
+categoryFilter.addEventListener('change', displayBooks);
+init();
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
